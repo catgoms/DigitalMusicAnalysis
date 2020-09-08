@@ -47,8 +47,7 @@ namespace DigitalMusicAnalysis
             loadHistogram();
 
             watch.Stop();
-            //test
-            Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds} ms");
+            Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds/1000} ms");
 
             playBack();
             check.Start();
