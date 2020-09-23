@@ -12,6 +12,7 @@ using System.Timers;
 using System.Numerics;
 using NAudio.Wave;
 using System.Xml;
+using System.Threading.Tasks;
 
 namespace DigitalMusicAnalysis
 {
@@ -33,11 +34,12 @@ namespace DigitalMusicAnalysis
         {
             var watch = new System.Diagnostics.Stopwatch();
 
-            watch.Start();
-
             InitializeComponent();
             filename = openFile("Select Audio (wav) file");
             string xmlfile = openFile("Select Score (xml) file");
+
+            watch.Start();
+
             Thread check = new Thread(new ThreadStart(updateSlider));
             loadWave(filename);
             freqDomain();
@@ -47,7 +49,7 @@ namespace DigitalMusicAnalysis
             loadHistogram();
 
             watch.Stop();
-            Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds/1000} ms");
+            Console.WriteLine($"Execution Time: {watch.ElapsedMilliseconds/1000.0} seconds");
 
             playBack();
             check.Start();
@@ -273,13 +275,21 @@ namespace DigitalMusicAnalysis
         {
             stftRep = new timefreq(waveIn.wave, 2048);
             pixelArray = new float[stftRep.timeFreqData[0].Length * stftRep.wSamp / 2];
-            for (int jj = 0; jj < stftRep.wSamp / 2; jj++)
+
+            Parallel.For(0, stftRep.wSamp / 2, jj =>
             {
-                for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++)
-                {
+                for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++) {
                     pixelArray[jj * stftRep.timeFreqData[0].Length + ii] = stftRep.timeFreqData[jj][ii];
                 }
-            }
+            });
+
+            //for (int jj = 0; jj < stftRep.wSamp / 2; jj++)
+            //{
+            //    for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++)
+            //    {
+            //        pixelArray[jj * stftRep.timeFreqData[0].Length + ii] = stftRep.timeFreqData[jj][ii];
+            //    }
+            //}
 
         }
 
