@@ -276,20 +276,18 @@ namespace DigitalMusicAnalysis
             stftRep = new timefreq(waveIn.wave, 2048);
             pixelArray = new float[stftRep.timeFreqData[0].Length * stftRep.wSamp / 2];
 
-            Parallel.For(0, stftRep.wSamp / 2, jj =>
-            {
+            //Parallel.For(0, stftRep.wSamp / 2, jj =>
+            //{
+            //    for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++) {
+            //        pixelArray[jj * stftRep.timeFreqData[0].Length + ii] = stftRep.timeFreqData[jj][ii];
+            //    }
+            //});
+
+            for (int jj = 0; jj < stftRep.wSamp / 2; jj++) {
                 for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++) {
                     pixelArray[jj * stftRep.timeFreqData[0].Length + ii] = stftRep.timeFreqData[jj][ii];
                 }
-            });
-
-            //for (int jj = 0; jj < stftRep.wSamp / 2; jj++)
-            //{
-            //    for (int ii = 0; ii < stftRep.timeFreqData[0].Length; ii++)
-            //    {
-            //        pixelArray[jj * stftRep.timeFreqData[0].Length + ii] = stftRep.timeFreqData[jj][ii];
-            //    }
-            //}
+            }
 
         }
 
