@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 
 namespace DigitalMusicAnalysis
 {
@@ -44,10 +45,15 @@ namespace DigitalMusicAnalysis
 
             data = binRead.ReadBytes(numSamples);
 
-            for (int i = 0; i < numSamples; i++)
+            Parallel.For(0, numSamples, i =>
             {
                 wave[i] = ((float)data[i] - 128) / 128;
-            }
+            });
+
+            //for (int i = 0; i < numSamples; i++)
+            //{
+            //    wave[i] = ((float)data[i] - 128) / 128;
+            //}
 
         }
     }

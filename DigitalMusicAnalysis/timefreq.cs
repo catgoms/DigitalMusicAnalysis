@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace DigitalMusicAnalysis
 {
@@ -16,11 +18,18 @@ namespace DigitalMusicAnalysis
             Complex i = Complex.ImaginaryOne;
             this.wSamp = windowSamp;
             twiddles = new Complex[wSamp];
-            for (ii = 0; ii < wSamp; ii++)
+
+            Parallel.For(0, wSamp, ii =>
             {
                 double a = 2 * pi * ii / (double)wSamp;
                 twiddles[ii] = Complex.Pow(Complex.Exp(-i), (float)a);
-            }
+            });
+
+            //for (ii = 0; ii < wSamp; ii++)
+            //{
+            //    double a = 2 * pi * ii / (double)wSamp;
+            //    twiddles[ii] = Complex.Pow(Complex.Exp(-i), (float)a);
+            //}
 
             timeFreqData = new float[wSamp/2][];
 
@@ -28,25 +37,40 @@ namespace DigitalMusicAnalysis
             nearest = nearest * wSamp;
 
             Complex[] compX = new Complex[nearest];
-            for (int kk = 0; kk < nearest; kk++)
+
+            Parallel.For(0, nearest, kk =>
             {
-                if (kk < x.Length)
-                {
+                if (kk < x.Length) {
                     compX[kk] = x[kk];
-                }
-                else
-                {
+                } else {
                     compX[kk] = Complex.Zero;
                 }
-            }
+            });
+
+            //for (int kk = 0; kk < nearest; kk++)
+            //{
+            //    if (kk < x.Length)
+            //    {
+            //        compX[kk] = x[kk];
+            //    }
+            //    else
+            //    {
+            //        compX[kk] = Complex.Zero;
+            //    }
+            //}
 
 
             int cols = 2 * nearest /wSamp;
 
-            for (int jj = 0; jj < wSamp / 2; jj++)
+            Parallel.For(0, wSamp / 2, jj =>
             {
                 timeFreqData[jj] = new float[cols];
-            }
+            });
+
+            //for (int jj = 0; jj < wSamp / 2; jj++)
+            //{
+            //    timeFreqData[jj] = new float[cols];
+            //}
 
             timeFreqData = stft(compX, wSamp);
 	
@@ -63,21 +87,30 @@ namespace DigitalMusicAnalysis
             
             float[][] Y = new float[wSamp / 2][];
 
-            for (ll = 0; ll < wSamp / 2; ll++)
+            Parallel.For(0, wSamp / 2, ll =>
             {
                 Y[ll] = new float[2 * (int)Math.Floor((double)N / (double)wSamp)];
-            }
+            });
+
+            //for (ll = 0; ll < wSamp / 2; ll++)
+            //{
+            //    Y[ll] = new float[2 * (int)Math.Floor((double)N / (double)wSamp)];
+            //}
             
             Complex[] temp = new Complex[wSamp];
             Complex[] tempFFT = new Complex[wSamp];
 
             for (ii = 0; ii < 2 * Math.Floor((double)N / (double)wSamp) - 1; ii++)
             {
-
-                for (jj = 0; jj < wSamp; jj++)
+                Parallel.For(0, wSamp, jj =>
                 {
                     temp[jj] = x[ii * (wSamp / 2) + jj];
-                }
+                });
+
+                //for (jj = 0; jj < wSamp; jj++)
+                //{
+                //    temp[jj] = x[ii * (wSamp / 2) + jj];
+                //}
 
                 tempFFT = fft(temp);
 
@@ -94,10 +127,15 @@ namespace DigitalMusicAnalysis
 
             }
 
-            for (ii = 0; ii < 2 * Math.Floor((double)N / (double)wSamp) - 1; ii++)
-            {
-                for (kk = 0; kk < wSamp / 2; kk++)
-                {
+            //Parallel.For(0, (int)(2 * Math.Floor((double)N / (double)wSamp) - 1), ii =>
+            //{
+            //    for (kk = 0; kk < wSamp / 2; kk++) {
+            //        Y[kk][ii] /= fftMax;
+            //    }
+            //});
+
+            for (ii = 0; ii < 2 * Math.Floor((double)N / (double)wSamp) - 1; ii++) {
+                for (kk = 0; kk < wSamp / 2; kk++) {
                     Y[kk][ii] /= fftMax;
                 }
             }

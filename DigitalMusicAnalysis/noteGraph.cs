@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 
 namespace DigitalMusicAnalysis
@@ -19,13 +20,20 @@ namespace DigitalMusicAnalysis
 
         public void setRectHeights(float[] values)
         {
-          
-            for (int ii = 0; ii < heights.Length; ii++)
+
+            Parallel.For(0, heights.Length, ii =>
             {
                 int index = (int)Math.Floor(baseFreq / div + ii);
 
                 heights[ii] = values[index];
-            }         
+            });
+
+            //for (int ii = 0; ii < heights.Length; ii++)
+            //{
+            //    int index = (int)Math.Floor(baseFreq / div + ii);
+
+            //    heights[ii] = values[index];
+            //}         
 
 
         }
