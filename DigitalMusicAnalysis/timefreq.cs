@@ -111,8 +111,9 @@ namespace DigitalMusicAnalysis
                 //{
                 //    temp[jj] = x[ii * (wSamp / 2) + jj];
                 //}
-
-                tempFFT = fft(temp);
+                
+                tempFFT = fftTEST(temp);
+                //tempFFT = fft(temp);
 
                 for (kk = 0; kk < wSamp / 2; kk++)
                 {
@@ -143,51 +144,66 @@ namespace DigitalMusicAnalysis
             return Y;
         }
 
-        Complex[] fft(Complex[] x)
+        public static int BitReverse(int n, int bits)
         {
-            int ii = 0;
-            int kk = 0;
-            int N = x.Length;
+            int reversedN = n;
+            int count = bits - 1;
 
-            Complex[] Y = new Complex[N];
-
-            // NEED TO MEMSET TO ZERO?
-
-            if (N == 1)
-            {
-                Y[0] = x[0];
-            }
-            else{
-
-                Complex[] E = new Complex[N/2];
-                Complex[] O = new Complex[N/2];
-                Complex[] even = new Complex[N/2];
-                Complex[] odd = new Complex[N/2];
-
-                for (ii = 0; ii < N; ii++)
-                {
-
-                    if (ii % 2 == 0)
-                    {
-                        even[ii / 2] = x[ii];
-                    }
-                    if (ii % 2 == 1)
-                    {
-                        odd[(ii - 1) / 2] = x[ii];
-                    }
-                }
-
-                E = fft(even);
-                O = fft(odd);
-
-                for (kk = 0; kk < N; kk++)
-                {
-                    Y[kk] = E[(kk % (N / 2))] + O[(kk % (N / 2))] * twiddles[kk * wSamp / N];
-                }
+            n >>= 1;
+            while (n > 0) {
+                reversedN = (reversedN << 1) | (n & 1);
+                count--;
+                n >>= 1;
             }
 
-           return Y;
+            return ((reversedN << count) & ((1 << bits) - 1));
         }
-        
+
+        private Complex[] fftTEST(Complex[] x)
+        {
+            int bits = (int)Math.Log(x.Length, 2);
+
+            //for (int j = 1; j < x.Length; j++) {
+            //    int swapPos = BitReverse(j, bits);
+            //    if (swapPos <= j) {
+            //        continue;
+            //    }
+            //    var temp = x[j];
+            //    x[j] = x[swapPos];
+            //    x[swapPos] = temp;
+            //}
+
+            Parallel.For(1, x.Length, j =>
+            {
+                int swapPos = BitReverse(j, bits);
+                if (swapPos <= j) {
+                    return;
+                }
+                var temp = x[j];
+                x[j] = x[swapPos];
+                x[swapPos] = temp;
+            });
+
+            for (int N = 2; N <= x.Length; N <<= 1) {
+                for (int i = 0; i < x.Length; i += N) {
+                    for (int k = 0; k < N / 2; k++) {
+
+                        int evenIndex = i + k;
+                        int oddIndex = i + k + (N / 2);
+                        var even = x[evenIndex];
+                        var odd = x[oddIndex];
+
+                        double term = -2 * Math.PI * k / (double)N;
+                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
+
+                        x[evenIndex] = even + exp;
+                        x[oddIndex] = even - exp;
+
+                    }
+                }
+            }
+
+            return x;
+        }
     }
 }

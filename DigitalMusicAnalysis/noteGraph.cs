@@ -35,7 +35,6 @@ namespace DigitalMusicAnalysis
             //    heights[ii] = values[index];
             //}         
 
-
         }
     }
 }
