@@ -490,7 +490,8 @@ namespace DigitalMusicAnalysis
                 Console.WriteLine("fft Started");
                 fftWatch.Start();
 
-                Y = fft(compX, nearest);
+                //Y = fft(compX, nearest);
+                Y = fftTEST(compX, nearest);
 
                 fftWatch.Stop();
                 Console.WriteLine($"fft Execution Time: {fftWatch.ElapsedMilliseconds / 1000.0} seconds");
@@ -984,79 +985,94 @@ namespace DigitalMusicAnalysis
             return Y;
         }
 
+        public static int BitReverse(int n, int bits)
+        {
+            int reversedN = n;
+            int count = bits - 1;
+
+            n >>= 1;
+            while (n > 0) {
+                reversedN = (reversedN << 1) | (n & 1);
+                count--;
+                n >>= 1;
+            }
+
+            return ((reversedN << count) & ((1 << bits) - 1));
+        }
+
         private Complex[] fftTEST(Complex[] x, int L)
         {
-            int ii = 0;
-            int kk = 0;
-            int N = x.Length;
 
-            Complex[] Y = new Complex[N];
+            int bits = (int)Math.Log(x.Length, 2);
 
-            Complex[] E = new Complex[N / 2];
-            Complex[] O = new Complex[N / 2];
-            List<Complex[]> evenL = new List<Complex[]>();
-            List<Complex[]> oddL = new List<Complex[]>();
-            Complex[] even = new Complex[N / 2];
-            Complex[] odd = new Complex[N / 2];
+            //for (int j = 1; j < x.Length; j++) {
+            //    int swapPos = BitReverse(j, bits);
+            //    if (swapPos <= j) {
+            //        continue;
+            //    }
+            //    var temp = x[j];
+            //    x[j] = x[swapPos];
+            //    x[swapPos] = temp;
+            //}
 
-            
-
-            for (ii = 0; ii < N; ii++) {
-                if (ii % 2 == 0) {
-                    even[ii / 2] = x[ii];
+            Parallel.For(1, x.Length, j =>
+            {
+                int swapPos = BitReverse(j, bits);
+                if (swapPos <= j) {
+                    return;
                 }
-                if (ii % 2 == 1) {
-                    odd[(ii - 1) / 2] = x[ii];
-                }
+                var temp = x[j];
+                x[j] = x[swapPos];
+                x[swapPos] = temp;
+            });
+
+
+            //for (int N = 2; N <= x.Length; N <<= 1) {
+            //    for (int i = 0; i < x.Length; i += N) {
+            //        for (int k = 0; k < N / 2; k++) {
+
+            //            int evenIndex = i + k;
+            //            int oddIndex = i + k + (N / 2);
+            //            var even = x[evenIndex];
+            //            var odd = x[oddIndex];
+
+            //            double term = -2 * Math.PI * k / (double)N;
+            //            Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
+
+            //            x[evenIndex] = even + exp;
+            //            x[oddIndex] = even - exp;
+
+            //        }
+            //    }
+            //}
+
+            var list = new List<int>();
+
+            for (int N = 2; N <= x.Length; N <<= 1) {
+                list.Add(N);
             }
 
-            evenL.Add(even);
-            oddL.Add(odd);
+            Parallel.ForEach(list, N =>
+            {
+                for (int i = 0; i < x.Length; i += N) {
+                    for (int k = 0; k < N / 2; k++) {
 
-            int i = 0;
-            
-            while (evenL.Last().Length > 1) {
-                for (ii = 0; ii < N; ii++) {
-                    if (ii % 2 == 0) {
-                        even[ii / 2] = evenL[i][ii];
-                    }
-                    if (ii % 2 == 1) {
-                        odd[(ii - 1) / 2] = oddL[i][ii];
-                    }
-                }
-                evenL.Add(even);
-                oddL.Add(odd);
+                        int evenIndex = i + k;
+                        int oddIndex = i + k + (N / 2);
+                        var even = x[evenIndex];
+                        var odd = x[oddIndex];
 
-                i++;
-            }
+                        double term = -2 * Math.PI * k / (double)N;
+                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
 
+                        x[evenIndex] = even + exp;
+                        x[oddIndex] = even - exp;
 
-            if (N == 1) {
-                Y[0] = x[0];
-            } else {
-                //Complex[] E = new Complex[N / 2];
-                //Complex[] O = new Complex[N / 2];
-                //Complex[] even = new Complex[N / 2];
-                //Complex[] odd = new Complex[N / 2];
-
-                for (ii = 0; ii < N; ii++) {
-                    if (ii % 2 == 0) {
-                        even[ii / 2] = x[ii];
-                    }
-                    if (ii % 2 == 1) {
-                        odd[(ii - 1) / 2] = x[ii];
                     }
                 }
+            });
 
-                E = fft(even, L);
-                O = fft(odd, L);
-
-                for (kk = 0; kk < N; kk++) {
-                    Y[kk] = E[(kk % (N / 2))] + O[(kk % (N / 2))] * twiddles[kk * (L / N)];
-                }
-            }
-
-            return Y;
+            return x;
         }
 
         private musicNote[] readXML(string filename)
