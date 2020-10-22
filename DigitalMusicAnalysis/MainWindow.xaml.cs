@@ -43,8 +43,11 @@ namespace DigitalMusicAnalysis
             Thread check = new Thread(new ThreadStart(updateSlider));
 
             loadWave(filename);
-            freqDomain();
+            Thread thread1 = new Thread(new ThreadStart(freqDomain));
+            thread1.Start();
+            //freqDomain();
             sheetmusic = readXML(xmlfile);
+            thread1.Join();
             onsetDetection();
             loadImage();
             loadHistogram();
@@ -486,15 +489,7 @@ namespace DigitalMusicAnalysis
 
                 Y = new Complex[nearest];
 
-                var fftWatch = new System.Diagnostics.Stopwatch();
-                Console.WriteLine("fft Started");
-                fftWatch.Start();
-
-                //Y = fft(compX, nearest);
-                Y = fftTEST(compX);
-
-                fftWatch.Stop();
-                Console.WriteLine($"fft Execution Time: {fftWatch.ElapsedMilliseconds / 1000.0} seconds");
+                Y = fft(compX);
 
                 absY = new double[nearest];
 
@@ -858,7 +853,7 @@ namespace DigitalMusicAnalysis
         }
 
         // FFT function for Pitch Detection
-        private Complex[] fftTEST(Complex[] x)
+        private Complex[] fft(Complex[] x)
         {
 
             int bits = (int)Math.Log(x.Length, 2);

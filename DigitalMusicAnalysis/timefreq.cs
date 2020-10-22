@@ -112,8 +112,7 @@ namespace DigitalMusicAnalysis
                 //    temp[jj] = x[ii * (wSamp / 2) + jj];
                 //}
                 
-                tempFFT = fftTEST(temp);
-                //tempFFT = fft(temp);
+                tempFFT = fft(temp);
 
                 for (kk = 0; kk < wSamp / 2; kk++)
                 {
@@ -159,7 +158,7 @@ namespace DigitalMusicAnalysis
             return ((reversedN << count) & ((1 << bits) - 1));
         }
 
-        private Complex[] fftTEST(Complex[] x)
+        private Complex[] fft(Complex[] x)
         {
             int bits = (int)Math.Log(x.Length, 2);
 
