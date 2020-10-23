@@ -28,13 +28,6 @@ namespace DigitalMusicAnalysis
                 heights[ii] = values[index];
             });
 
-            //for (int ii = 0; ii < heights.Length; ii++)
-            //{
-            //    int index = (int)Math.Floor(baseFreq / div + ii);
-
-            //    heights[ii] = values[index];
-            //}         
-
         }
     }
 }
